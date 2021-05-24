@@ -33,22 +33,14 @@ def read_txt(file: str):
     return rezult_pr, rezult_word
 
 
-def tokens(corp):
-    rez = []
-    for i in corp:
-        for j in i.split():
-            rez.append(j)
-    return rez
+
 
 
 def n_gram(corp: list[list[str]]):
     rez = []
-
     for pr in corp:
         for ngrams in zip(*[pr[i:] for i in range(NGRAM)]):
             rez.append(ngrams)
-    # for ngrams in zip(*[mass[i:] for i in range(NGRAM)]):
-    #     rez.append(ngrams)
     return rez
 
 
@@ -79,12 +71,6 @@ def p_grams(count: int, word: str, corp: list[str]):
     # print(bi[0]/corp.count('теперь'))
     return count / corp.count(word)
 
-
-def bigrams(corp: list[str]):
-    rez = []
-    for bigr in zip(corp[:], corp[1:]):
-        rez.append(bigr)
-    return rez
 
 
 def all_count_word(corp: list[list[str]]):
