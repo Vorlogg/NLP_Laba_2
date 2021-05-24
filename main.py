@@ -3,7 +3,9 @@ import re
 from collections import defaultdict
 from tqdm import tqdm
 
-NGRAM=3
+NGRAM = 3
+
+
 # def read_txt(file: str):
 #     rezult = []
 #     word_set = set()
@@ -20,20 +22,27 @@ NGRAM=3
 def read_txt(file: str):
     rezult_pr = []
     rezult_word = []
+    all_words=[]
     with open(file, "r", encoding="utf-8") as f:
         for i in f:
             data = re.sub(r"[\n,?,–,:,L=;,…,.,!,«,»,—,\-,*,\t,\xa0-]|(\[.+\])|(<.+>)|(\(.+\))", "", i)
             rez = data.lower()
             if rez:
                 if rez != "  " and rez != " " and rez != "   " and rez != "    ":
+                    #подсчет уникальных слов
+                    words=rez.split()
+                    [all_words.append(i) for i in words]
+                    #разбитие на предложения
                     rezult_pr.append(rez)
-                    rez = "$ " * (NGRAM-1) + rez + " $"*(NGRAM-1)
+                    #разбитие на токены и добавление $
+                    rez = "$ " * (NGRAM - 1) + rez + " $" * (NGRAM - 1)
                     rezult_words = rez.split()
                     rezult_word.append(rezult_words)
-    return rezult_pr, rezult_word
 
-
-
+    # подсчет уникальных слов
+    all_words=set(all_words)
+    all_count_words=len(all_words)
+    return rezult_pr, rezult_word,all_words,all_count_words
 
 
 def n_gram(corp: list[list[str]]):
@@ -44,25 +53,56 @@ def n_gram(corp: list[list[str]]):
     return rez
 
 
-def train(corp: list[str], n: int):
-    n_grams = n_gram(corp, n)
-    bigram = bigrams(corp)
-    bi, tri = defaultdict(lambda: 0.0), defaultdict(lambda: 0.0)
-    for i in bigram:
-        # bi[i[0], i[1]] = count_word2(i[0], i[1], corp)
-        bi[i[0], i[1]] += 1
-    for i in n_grams:
-        rez = tuple([i[j] for j in range(n)])
-        tri[rez] += 1
+# ввел предложения в начало добваить $ $ кол-во нграм, получаем нграм с него и проходимся им по корпусу нграм считаем вероятности
+# беру 2 последних слова и ищу в нграм
+# 'моих', 'стихов', 'ты') для ты считаем вероятность
 
-    model = defaultdict(lambda: 0.0)
-    for key, items in tqdm(tri.items()):
-        # v1=p_grams(int(items),str(key[0]),corp)
-        model[key] = items / corp.count(key[0])
-        # print(model[key])
-    print(model)
+def find_word_count(word: str,ngram):
+    word_n = ["$"] * (NGRAM - 1)
+    words = word.lower().split()
+    word_dickt=defaultdict(lambda:0.0)
+    for w in words:
+        word_n.append(w)
+    rez = []
+    for ngrams in zip(*[word_n[i:] for i in range(NGRAM)]):
+        rez.append(ngrams)
+        word_dickt[ngrams]=count_ngram(ngrams,ngram)
+    return word_dickt
 
-    # print(tri)
+def count_ngram(word,ngram):
+    sum=0
+    for i in ngram:
+        if i[len(i)-len(word):] == word:
+           sum+=1
+    return sum
+
+
+
+
+def laplace(word, alpha:float,v:int,ngram):
+    return (count_ngram(" ".join(word),ngram)+alpha)/(count_ngram(" ".join(word[:-1]),ngram)+alpha*v)
+
+
+
+# def train(corp: list[str], n: int):
+#     n_grams = n_gram(corp, n)
+#     bigram = bigrams(corp)
+#     bi, tri = defaultdict(lambda: 0.0), defaultdict(lambda: 0.0)
+#     for i in bigram:
+#         # bi[i[0], i[1]] = count_word2(i[0], i[1], corp)
+#         bi[i[0], i[1]] += 1
+#     for i in n_grams:
+#         rez = tuple([i[j] for j in range(n)])
+#         tri[rez] += 1
+#
+#     model = defaultdict(lambda: 0.0)
+#     for key, items in tqdm(tri.items()):
+#         # v1=p_grams(int(items),str(key[0]),corp)
+#         model[key] = items / corp.count(key[0])
+#         # print(model[key])
+#     print(model)
+#
+#     # print(tri)
 
 
 def p_grams(count: int, word: str, corp: list[str]):
@@ -70,7 +110,6 @@ def p_grams(count: int, word: str, corp: list[str]):
     # ('теперь', 'отдыхай'):
     # print(bi[0]/corp.count('теперь'))
     return count / corp.count(word)
-
 
 
 def all_count_word(corp: list[list[str]]):
@@ -117,16 +156,28 @@ def p_count_word2(word1: str, word2: str, corp: list[str]):
 
 
 test_word = "Пушкин.txt"
-# test_word = "1.txt"
+test_word = "1.txt"
 # test_word = "Толстой.txt"
 # print(find_word(test_word, corp_text, 1))
-corpr, words = read_txt(test_word)
+corpr, words,all_count_words ,v= read_txt(test_word)
+# print(all_count_words)
+# print(corpr)
 # print(words)
-print(n_gram(words))
+# print(n_gram(words))
+ngram=n_gram(words)
+print(ngram)
+# word=find_word_count("Когда Потемкину в потемках",ngram)
+# print(word)
+# print(count_ngram(('$', '$', 'когда'),ngram))
+# print(count_ngram(('$', 'когда'),ngram))
+# wordd=('$', '$', 'когда')
+# wordd=('$', '$', 'когда')
+wordd=('$', '$', 'this')
+print(laplace(wordd,0.2,v,ngram))
 
-corp = tokens(corpr)
-# print(corp)
-# print(bigrams(corp))
+
+
+
 
 # train(corp, 3)
 # # print(bigr)
