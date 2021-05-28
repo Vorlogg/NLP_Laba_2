@@ -104,6 +104,14 @@ def word_ty_n_gram(corp: list[str]):
         rez.append(list(ngrams))
     return rez
 
+def perplection(p_ngram,len_words):
+    try:
+        n=-1/len_words
+        rez=pow(p_ngram, -1/len_words)
+        return rez
+    except Exception as e:
+        return 0
+
 
 def train(word, gen: int,lambd):
     word_token = word_ty_token(word)
@@ -114,34 +122,47 @@ def train(word, gen: int,lambd):
     word_p_gen = 0
     word_gen = []
     next_gen_word = ""
+    perpl_start = perplection(word_p,len(word_3))
+    print("перплексия до={p}".format(p=perpl_start))
     for i in word_3[1:]:
         word_gen.append(i)
     for j in range(gen):
         for i in ngram:
             if i[:3] == word_3[-3:]:
-                word_p_gen = otkat(i, 0.0, all_count_words, ngram,lambd)
+                word_p_gen = otkat(i, 0.2, all_count_words, ngram,lambd)
                 if max_p < word_p_gen:
                     max_p = word_p_gen
                     next_gen_word = i[-1]
 
-        max_p=0
-        word_p_gen=0
+
         if next_gen_word == "$":
             break
+
+        max_p = 0
+        word_p_gen = 0
         word_gen.append(next_gen_word)
         word_3 = word_gen
+
         print("gen:{e}{gen}".format(e=j, gen=word_gen))
 
     print("начальное слово= " + word + " p=" + str(word_p))
+    # word_token_gen = word_ty_token(word_gen)
+    word_gen_p=1
+    word_ngram_gen = word_ty_n_gram(word_gen)
+    for i in word_ngram_gen:
+        word_gen_p*=otkat(i, 0.2, all_count_words, ngram,lambd)
+    perpl_end = perplection(word_gen_p,len(word_gen))
+    print("перплексия после={p}".format(p=perpl_end))
+
 
     print(word_gen)
 
 
-test_word = "Пушкин.txt"
+# test_word = "Пушкин.txt"
 test_word = "2.txt"
 
 corpr, words, all_words, all_count_words = read_txt(test_word)
 
 ngram = n_gram(words)
 lam=[0.2,0.4,0.8]
-train("была", 30,lam)
+train("вы", 30,lam)
