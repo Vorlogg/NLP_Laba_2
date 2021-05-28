@@ -3,7 +3,7 @@ import re
 from collections import defaultdict
 from tqdm import tqdm
 
-NGRAM = 3
+NGRAM = 4
 
 
 # def read_txt(file: str):
@@ -66,8 +66,10 @@ def find_word_count(word: str,ngram):
     rez = []
     for ngrams in zip(*[word_n[i:] for i in range(NGRAM)]):
         rez.append(ngrams)
+        print(ngrams)
         word_dickt[ngrams]=count_ngram(ngrams,ngram)
     return word_dickt
+
 
 def count_ngram(word,ngram):
     sum=0
@@ -80,7 +82,10 @@ def count_ngram(word,ngram):
 
 
 def laplace(word, alpha:float,v:int,ngram):
-    return (count_ngram(" ".join(word),ngram)+alpha)/(count_ngram(" ".join(word[:-1]),ngram)+alpha*v)
+    word_count_1=count_ngram(word,ngram)
+    word_count_2=count_ngram(word[:-1],ngram)
+    return (word_count_1+alpha)/(word_count_2+alpha*v)
+    # return (count_ngram(" ".join(word),ngram)+alpha)/(count_ngram(" ".join(word[:-1]),ngram)+alpha*v)
 
 
 
@@ -145,35 +150,36 @@ def p_count_word2(word1: str, word2: str, corp: list[str]):
     return rez
 
 
-# def bgram(corp: list[list[str]], word_set: set, n:int,start_word:str):
-#     nword=0
-#     word=start_word
-#     w1 = p_word(start_word, corp)
-#     while nword<n:
-#         for i in word_set:
-#
-#     return
 
 
 test_word = "Пушкин.txt"
 test_word = "1.txt"
 # test_word = "Толстой.txt"
 # print(find_word(test_word, corp_text, 1))
-corpr, words,all_count_words ,v= read_txt(test_word)
+corpr, words,all_words,all_count_words= read_txt(test_word)
 # print(all_count_words)
 # print(corpr)
 # print(words)
 # print(n_gram(words))
 ngram=n_gram(words)
 print(ngram)
-# word=find_word_count("Когда Потемкину в потемках",ngram)
-# print(word)
+word=find_word_count("This is the malt",ngram)
+print(word)
 # print(count_ngram(('$', '$', 'когда'),ngram))
 # print(count_ngram(('$', 'когда'),ngram))
 # wordd=('$', '$', 'когда')
 # wordd=('$', '$', 'когда')
-wordd=('$', '$', 'this')
-print(laplace(wordd,0.2,v,ngram))
+wordd=('this', 'is','the','house')
+print(laplace(wordd,0.2,all_count_words,ngram))
+
+
+
+
+# words_p={}
+# for i in ngram:
+#     words_p[i]=laplace(i,0.2,all_count_words,ngram)
+# print(words_p)
+
 
 
 
