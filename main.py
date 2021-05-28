@@ -174,6 +174,7 @@ print(word)
 wordd = ['$', '$', '$', 'this']
 
 print(laplace(wordd, 0.0, all_count_words, ngram))
+
 def otkat(word, alpha: float, v: int, ngram, lambd):
     sum=0
     for i in lambd:
@@ -195,11 +196,10 @@ def word_ty_n_gram(corp: list[str]):
     return rez
 
 
-def train(word, gen: int):
+def train(word, gen: int,lambd):
     word_token = word_ty_token(word)
     word_ngram = word_ty_n_gram(word_token)
-    print(word_ngram)
-    word_p = laplace(word_ngram[-1], 0.0, all_count_words, ngram)
+    word_p = otkat(word_ngram[-1], 0.0, all_count_words, ngram,lambd)
     word_3 = word_ngram[-1]
     max_p = 0
     word_p_gen = 0
@@ -208,16 +208,17 @@ def train(word, gen: int):
     for i in word_3[1:]:
         word_gen.append(i)
     for j in range(gen):
-        print('w')
-        print(word_3[-3:])
         for i in ngram:
             if i[:3] == word_3[-3:]:
-                word_p_gen = laplace(i, 0.0, all_count_words, ngram)
+                word_p_gen = otkat(i, 0.0, all_count_words, ngram,lambd)
                 if max_p < word_p_gen:
                     max_p = word_p_gen
                     next_gen_word = i[-1]
+
         max_p=0
         word_p_gen=0
+        if next_gen_word == "$":
+            break
         word_gen.append(next_gen_word)
         word_3 = word_gen
         print("gen:{e}{gen}".format(e=j, gen=word_gen))
@@ -228,8 +229,9 @@ def train(word, gen: int):
 
 
 # train("This is the",5)
-# train("That", 5)
-train("была", 10)
+# train
+lam=[0.2,0.4,0.8]
+train("была", 30,lam)
 # print(dict_word_p(ngram))
 
 #
