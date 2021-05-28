@@ -174,7 +174,11 @@ print(word)
 wordd = ['$', '$', '$', 'this']
 
 print(laplace(wordd, 0.0, all_count_words, ngram))
-
+def otkat(word, alpha: float, v: int, ngram, lambd):
+    sum=0
+    for i in lambd:
+        sum+=i*laplace(word,alpha,v,ngram)
+    return sum
 
 def word_ty_token(rez: str):
     # разбитие на токены и добавление $
